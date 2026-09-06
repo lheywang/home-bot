@@ -1,17 +1,17 @@
 [Unit]
 Description=Home Bot - Knowledge discord bot
 After=network.target
+Wants=network-online.target
 
 [Service]
 Type=simple
 User=homebot
-Group=homeboy
-WorkingDirectory=/opt/home-boy
+Group=homebot
+WorkingDirectory=/opt/home-bot
 
 # untracked
-EnvironmentFile=/etc/home-bot/config.env
-
-ExecStart=/opt/home-bot/.venv/bin/python main.py
+EnvironmentFile=/opt/home-bot/config.env
+ExecStart=/opt/home-bot/.venv/bin/python src/main.py
 
 Restart=always
 RestartSec=5s
@@ -19,6 +19,8 @@ RestartSec=5s
 ProtectSystem=strict
 ProtectHome=true
 NoNewPrivileges=true
+
+ReadWritePaths=/opt/home-bot
 
 [Install]
 WantedBy=multi-user.target
