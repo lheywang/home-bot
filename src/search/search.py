@@ -7,6 +7,7 @@
 # Import
 from unidecode import unidecode
 from dataclasses import dataclass
+import math
 
 
 @dataclass
@@ -92,10 +93,13 @@ class searchEngine:
         ]
 
         # Get the confidence level
-        confidence = self._get_confidence(articles=articles)
+        confidence = self._get_confidence(articles=articles, size=len(keywords))
 
         # Get full data logs
         results = self._get_rich_results(articles=articles)
+
+        # Console print:
+        print(f"[LOG] Query returned : {confidence}", articles)
 
         # Return the N best articles
         return confidence, results
@@ -181,16 +185,15 @@ class searchEngine:
 
         return article_scores
 
-    def _get_confidence(self, articles: list[tuple[str, tuple[int, int]]]) -> float:
+    def _get_confidence(
+        self, articles: list[tuple[str, tuple[int, int]]], size: int
+    ) -> float:
         """
         Indicate at which point we could be confident that this result is actually correct ?
         """
 
         # Get the highest score as possible
-        if len(articles) > 1:
-            score_max = 100000 * len(articles)
-        else:
-            score_max = 100000
+        score_max = 100000 * size
 
         # Get the total of the scores
         total = 0
@@ -198,7 +201,7 @@ class searchEngine:
             total += article[1][0]
 
         # Now, we can get the ratio
-        conf = min(100, (total / score_max) * 100)
+        conf = min(100, math.sqrt((total / score_max)) * 100)
 
         return round(conf, 1)
 
