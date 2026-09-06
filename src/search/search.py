@@ -67,7 +67,9 @@ class searchEngine:
                     self.keywords[token].append(obj)
 
         # Building our own index of data
-        self._articles_by_id = {element["hash"]: element for element in indata["data"]}
+        self._articles_by_id = {
+            element["hash"]: element for element in indata.get("data", [])
+        }
 
         return
 
