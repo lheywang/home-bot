@@ -24,12 +24,16 @@ def _confidence_bar(confidence: float, lengh: int = 10) -> str:
 class SearchCog(commands.Cog):
 
     def __init__(
-        self, bot: commands.Bot, search_engine: searchEngine, network: networkEngine
+        self,
+        bot: commands.Bot,
+        search_engine: searchEngine,
+        network: networkEngine,
+        home_url: str,
     ) -> None:
         self.bot: commands.Bot = bot
         self.search_engine: searchEngine = search_engine
-        self.base_url: str = "https://www.home-hardware.app"
         self.network: networkEngine = network
+        self.home = home_url
 
     def _build_embed(
         self, query: str, confidence: float, articles: List[dict[str, Any]]
@@ -37,7 +41,7 @@ class SearchCog(commands.Cog):
         """Build the search result embed"""
         best = articles[0]
         slug = best.get("slug", "").lstrip("/")
-        best_url = f"{self.base_url}/{slug}/"
+        best_url = f"{self.home}/{slug}/"
 
         # Ensure the base URL is conform
         best_url = best_url.lower().replace("'", "")
@@ -64,11 +68,11 @@ class SearchCog(commands.Cog):
         avatar_name = author.lower().replace(" ", "_")
         embed.set_author(
             name=author,
-            icon_url=f"{self.base_url}/avatars/{avatar_name}.png",
+            icon_url=f"{self.home}/avatars/{avatar_name}.png",
         )
 
         # Add an image
-        embed.set_thumbnail(url=f"{self.base_url}/public/favicon.svg")
+        embed.set_thumbnail(url=f"{self.home}/public/favicon.svg")
 
         # Add the confidence bar
         embed.add_field(
@@ -83,7 +87,7 @@ class SearchCog(commands.Cog):
             connexes = []
             for item in articles[1:]:
                 item_slug = item.get("slug", "").lstrip("/").lower()
-                item_url = f"{self.base_url}/{item_slug}/"
+                item_url = f"{self.home}/{item_slug}/"
                 connexes.append(f"• [{item.get('title')}]({item_url})")
 
             embed.add_field(
@@ -93,7 +97,7 @@ class SearchCog(commands.Cog):
             )
 
         embed.set_footer(text=f"Recherche : « {query} »")
-        return embed
+        return embed, best_url
 
     @app_commands.command(
         name="search",
@@ -124,22 +128,44 @@ class SearchCog(commands.Cog):
             )
             return
 
-        embed = self._build_embed(query, confidence, results)
-        await interaction.response.send_message(embed=embed)
+        embed, best_url = self._build_embed(query, confidence, results)
+
+        # Add an home page link
+        view = discord.ui.View()
+
+        view.add_item(
+            discord.ui.Button(
+                label="Meilleur résultat",
+                url=best_url,
+                style=discord.ButtonStyle.link,
+                emoji="🥳",
+            )
+        )
+
+        view.add_item(
+            discord.ui.Button(
+                label="Site web",
+                url=self.home,
+                style=discord.ButtonStyle.url,
+                emoji="💻",
+            )
+        )
+
+        await interaction.response.send_message(embed=embed, view=view)
 
 
 async def setup(bot: commands.Bot) -> None:
 
     search_engine = getattr(bot, "search_engine", None)
     if search_engine is None:
-        raise RuntimeError(
-            "Impossible de charger SearchCog sans bot.search_engine instancié."
-        )
+        raise RuntimeError("Unable to load SearchCog without bot.search_engine loaded.")
 
     network = getattr(bot, "network", None)
     if network is None:
-        raise RuntimeError(
-            "Impossible de charger SearchCog sans bot.network instancié."
-        )
+        raise RuntimeError("Unable to load SearchCog without bot.network loaded.")
 
-    await bot.add_cog(SearchCog(bot, search_engine, network))
+    home = getattr(bot, "home", None)
+    if home is None:
+        raise RuntimeError("Unable to load SearchCog without bot.home loaded.")
+
+    await bot.add_cog(SearchCog(bot, search_engine, network, home))
