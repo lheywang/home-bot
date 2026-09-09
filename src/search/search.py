@@ -79,7 +79,7 @@ class searchEngine:
         Search on the internal data base for the N best elements.
         """
         if type(keywords) == str:
-            keywords = [keywords]
+            keywords = keywords.split(" ")
 
         if len(keywords) > 5:
             keywords = keywords[:5]
