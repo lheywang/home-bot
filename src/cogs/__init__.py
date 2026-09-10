@@ -5,3 +5,6 @@
 # ----------------------------------------------------------------------------------
 
 from .search import SearchCog
+from .image import ImageCog
+from .errors import ErrorsCog
+from .links import LinksCog

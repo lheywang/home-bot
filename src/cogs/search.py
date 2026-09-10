@@ -34,10 +34,11 @@ class SearchCog(commands.Cog):
         self.search_engine: searchEngine = search_engine
         self.network: networkEngine = network
         self.home = home_url
+        print("[INFO] Loaded SearchCog")
 
     def _build_embed(
         self, query: str, confidence: float, articles: List[dict[str, Any]]
-    ) -> discord.Embed:
+    ) -> tuple[discord.Embed, str]:
         """Build the search result embed"""
         best = articles[0]
         slug = best.get("slug", "").lstrip("/")
