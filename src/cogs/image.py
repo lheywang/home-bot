@@ -101,7 +101,6 @@ class ImageCog(commands.Cog):
         title = _format_label(schema)
 
         embed = discord.Embed(title=title, color=0x3498DB)
-        embed.set_thumbnail(url=self.icon)
         embed.set_image(url=url)
         embed.set_footer(
             text=f"Interaction demandée par {interaction.user.display_name}",
